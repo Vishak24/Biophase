@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>BioPhase AI - Bacteria Growth Phase Detector</title>
+    <meta name="description"
+        content="Real-time bacteria growth phase detection using ML inference on OD600, growth rate, pH, and nutrient parameters." />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Space Grotesk Font -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet" />
+
+    <!-- Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <!-- D3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+    <!-- ONNX Runtime Web -->
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#00e1ff',
+                        lag: '#3b82f6',
+                        log: '#22c55e',
+                        stationary: '#f59e0b',
+                        death: '#ef4444',
+                        darkBg: '#0a0a0c',
+                    },
+                    fontFamily: {
+                        sans: ['Space Grotesk', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                    },
+                    borderRadius: { 'custom': '8px' }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0a0a0c;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .neon-text-primary {
+            text-shadow: 0 0 10px rgba(0, 225, 255, 0.5);
+        }
+
+        .neon-border-primary {
+            box-shadow: 0 0 15px rgba(0, 225, 255, 0.2);
+        }
+
+        /* Phase bands */
+        .phase-band-lag {
+            background: linear-gradient(180deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0) 100%);
+            border-right: 1px dashed rgba(59, 130, 246, 0.3);
+        }
+
+        .phase-band-log {
+            background: linear-gradient(180deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0) 100%);
+            border-right: 1px dashed rgba(34, 197, 94, 0.3);
+        }
+
+        .phase-band-stationary {
+            background: linear-gradient(180deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0) 100%);
+            border-right: 1px dashed rgba(245, 158, 11, 0.3);
+        }
+
+        .phase-band-death {
+            background: linear-gradient(180deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0) 100%);
+        }
+
+        /* Phase band pulse animations */
+        @keyframes pulseLag {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.5
+            }
+        }
+
+        @keyframes pulseLog {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.5
+            }
+        }
+
+        @keyframes pulseStationary {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.5
+            }
+        }
+
+        @keyframes pulseDeath {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.5
+            }
+        }
+
+        .phase-band-lag.active-phase {
+            animation: pulseLag 2s ease-in-out infinite;
+            background: linear-gradient(180deg, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0.05) 100%);
+        }
+
+        .phase-band-log.active-phase {
+            animation: pulseLog 2s ease-in-out infinite;
+            background: linear-gradient(180deg, rgba(34, 197, 94, 0.25) 0%, rgba(34, 197, 94, 0.05) 100%);
+        }
+
+        .phase-band-stationary.active-phase {
+            animation: pulseStationary 2s ease-in-out infinite;
+            background: linear-gradient(180deg, rgba(245, 158, 11, 0.25) 0%, rgba(245, 158, 11, 0.05) 100%);
+        }
+
+        .phase-band-death.active-phase {
+            animation: pulseDeath 2s ease-in-out infinite;
+            background: linear-gradient(180deg, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.05) 100%);
+        }
+
+        /* Slider styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #00e1ff;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(0, 225, 255, 0.8);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            width: 100%;
+            height: 100%;
+            opacity: 0.5;
+        }
+
+        /* Loading overlay */
+        #model-loading {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: #0a0a0c;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            transition: opacity 0.6s;
+        }
+
+        #model-loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader-ring {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(0, 225, 255, 0.1);
+            border-top-color: #00e1ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Predict button pulse */
+        @keyframes btnPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(0, 225, 255, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 40px rgba(0, 225, 255, 0.8), 0 0 60px rgba(0, 225, 255, 0.2);
+            }
+        }
+
+        #predict-btn:not(:disabled) {
+            animation: btnPulse 2s ease-in-out infinite;
+        }
+
+        #predict-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            animation: none;
+        }
+
+        /* D3 curve path animation */
+        .growth-path-animated {
+            stroke-dasharray: 3000;
+            stroke-dashoffset: 3000;
+            animation: drawPath 2.5s ease-out forwards;
+        }
+
+        @keyframes drawPath {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        /* Dot point glow */
+        #current-point {
+            filter: drop-shadow(0 0 6px #fff);
+            transition: cx 0.8s cubic-bezier(0.4, 0, 0.2, 1), cy 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Status badge */
+        .status-dot {
+            animation: statusPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes statusPulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.3
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+    <!-- Model Loading Overlay -->
+    <div id="model-loading">
+        <div class="loader-ring"></div>
+        <p class="text-primary font-mono text-sm tracking-widest" id="loading-text">LOADING MODEL...</p>
+        <p class="text-gray-600 text-xs font-mono" id="loading-sub">Initializing ONNX Runtime</p>
+    </div>
+
+    <!-- Background Canvas (Three.js) -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Navigation -->
+    <header class="h-16 border-b border-white/10 flex items-center justify-between px-8 glass-card sticky top-0 z-50">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center neon-border-primary">
+                <svg class="w-5 h-5 text-darkBg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M19.428 15.428a2 2 00-1.022-.547l-2.387-.477a6 6 00-3.86.517l-.318.158a6 6 01-3.86.517L6.05 15.21a2 2 00-1.806.547M8 4h8l-1 1v5.172a2 2 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 009 10.172V5L8 4z"
+                        stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                </svg>
+            </div>
+            <span class="text-xl font-bold tracking-tight text-white uppercase italic">BioPhase <span
+                    class="text-primary">AI</span></span>
+        </div>
+        <div class="flex items-center gap-6">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-500 status-dot" id="server-dot"></span>
+                <span class="text-xs font-mono text-gray-400" id="server-status">LOADING MODEL…</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-mono text-gray-400">MODE: REAL-TIME ONNX</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard -->
+    <main class="flex-grow grid grid-cols-1 lg:grid-cols-4 gap-6 p-6 max-w-[1600px] mx-auto w-full">
+
+        <!-- Growth Curve Chart (Center) -->
+        <section class="lg:col-span-3 flex flex-col gap-4">
+            <div class="glass-card p-6 flex-grow relative overflow-hidden flex flex-col">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-widest">Growth Curve Analysis
+                        </h2>
+                        <p class="text-2xl font-bold text-white">E. coli Strain K-12 <span
+                                class="text-xs font-mono text-primary ml-2">#BATCH-7742</span></p>
+                    </div>
+                    <div class="text-right font-mono">
+                        <p class="text-xs text-gray-500">SAMPLING RATE</p>
+                        <p class="text-sm text-white">1.5Hz</p>
+                    </div>
+                </div>
+
+                <!-- Chart Container -->
+                <div class="relative flex-grow min-h-[400px] border-l border-b border-white/20 ml-8 mb-8"
+                    id="chart-container">
+                    <!-- Phase Bands -->
+                    <div class="absolute inset-0 flex" id="phase-bands">
+                        <div class="h-full w-[15%] phase-band-lag flex items-end justify-center pb-2" id="band-lag">
+                            <span class="text-[10px] font-mono text-lag font-bold">LAG</span>
+                        </div>
+                        <div class="h-full w-[35%] phase-band-log flex items-end justify-center pb-2" id="band-log">
+                            <span class="text-[10px] font-mono text-log font-bold">LOG</span>
+                        </div>
+                        <div class="h-full w-[30%] phase-band-stationary flex items-end justify-center pb-2"
+                            id="band-stationary">
+                            <span class="text-[10px] font-mono text-stationary font-bold">STATIONARY</span>
+                        </div>
+                        <div class="h-full w-[20%] phase-band-death flex items-end justify-center pb-2" id="band-death">
+                            <span class="text-[10px] font-mono text-death font-bold">DEATH</span>
+                        </div>
+                    </div>
+
+                    <!-- SVG Growth Curve (D3) -->
+                    <svg id="growth-svg" class="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="lineGradient" x1="0%" x2="100%" y1="0%" y2="0%">
+                                <stop offset="0%" stop-color="#3b82f6" />
+                                <stop offset="15%" stop-color="#22c55e" />
+                                <stop offset="60%" stop-color="#f59e0b" />
+                                <stop offset="100%" stop-color="#ef4444" />
+                            </linearGradient>
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="3" result="blur" />
+                                <feMerge>
+                                    <feMergeNode in="blur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <path id="growth-path" fill="none" stroke="url(#lineGradient)" stroke-width="3"
+                            stroke-linecap="round" filter="url(#glow)" />
+                        <circle id="current-point" r="6" fill="#fff" stroke="rgba(0,225,255,0.6)" stroke-width="2" />
+                    </svg>
+
+                    <!-- Axes Labels -->
+                    <div class="absolute -left-10 top-1/2 -rotate-90 text-[10px] font-mono text-gray-500">OPTICAL
+                        DENSITY (OD600)</div>
+                    <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-mono text-gray-500">
+                        ELAPSED TIME (HOURS)</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Sidebar -->
+        <aside class="flex flex-col gap-6">
+            <!-- Phase Card -->
+            <div class="glass-card p-6 flex flex-col items-center text-center" id="phase-card">
+                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-6 w-full text-left">Current
+                    Phase</h3>
+
+                <!-- Confidence Gauge -->
+                <div class="relative w-40 h-40 mb-4">
+                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="transparent" stroke="rgba(255,255,255,0.05)"
+                            stroke-width="8" />
+                        <circle id="gauge-progress" cx="50" cy="50" r="45" fill="transparent" stroke="#22c55e"
+                            stroke-width="8" stroke-dasharray="283" stroke-dashoffset="283" stroke-linecap="round"
+                            style="transition: stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1), stroke 0.5s ease" />
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <span class="text-3xl font-bold text-white" id="confidence-val">—</span>
+                        <span class="text-[10px] text-gray-500 font-mono">CONFIDENCE</span>
+                    </div>
+                </div>
+
+                <h2 class="text-2xl font-black tracking-tighter uppercase mb-2" id="phase-name" style="color:#22c55e">
+                    AWAITING</h2>
+                <p class="text-sm text-gray-400 leading-relaxed px-4" id="phase-desc">
+                    Adjust parameters and click Run Prediction to classify the bacterial growth phase.
+                </p>
+            </div>
+
+            <!-- Quick Metrics -->
+            <div class="glass-card p-4 space-y-4">
+                <div class="flex justify-between items-center p-3 rounded bg-white/5">
+                    <span class="text-[10px] font-mono text-gray-400">OD600</span>
+                    <span class="text-sm font-bold text-primary" id="metric-od">—</span>
+                </div>
+                <div class="flex justify-between items-center p-3 rounded bg-white/5">
+                    <span class="text-[10px] font-mono text-gray-400">GROWTH RATE (μ)</span>
+                    <span class="text-sm font-bold text-primary" id="metric-gr">—</span>
+                </div>
+                <div class="flex justify-between items-center p-3 rounded bg-white/5">
+                    <span class="text-[10px] font-mono text-gray-400">pH</span>
+                    <span class="text-sm font-bold text-primary" id="metric-ph">—</span>
+                </div>
+                <div class="flex justify-between items-center p-3 rounded bg-white/5">
+                    <span class="text-[10px] font-mono text-gray-400">NUTRIENTS (g/L)</span>
+                    <span class="text-sm font-bold text-primary" id="metric-nut">—</span>
+                </div>
+                <div class="flex justify-between items-center p-3 rounded bg-white/5">
+                    <span class="text-[10px] font-mono text-gray-400">LOG(OD)</span>
+                    <span class="text-sm font-bold text-primary" id="metric-logod">—</span>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Parameter Control Footer -->
+    <footer class="p-6 pt-0 max-w-[1600px] mx-auto w-full">
+        <div class="glass-card p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 items-center">
+            <!-- OD600 -->
+            <div>
+                <label class="flex justify-between text-[10px] font-mono text-gray-400 mb-2">
+                    <span>TARGET OD600</span>
+                    <span class="text-primary" id="od-label">0.452</span>
+                </label>
+                <input class="w-full" id="od-input" type="range" min="0" max="2" step="0.001" value="0.452" />
+            </div>
+            <!-- Growth Rate -->
+            <div>
+                <label class="flex justify-between text-[10px] font-mono text-gray-400 mb-2">
+                    <span>GROWTH RATE (μ)</span>
+                    <span class="text-primary" id="rate-label">1.2</span>
+                </label>
+                <input class="w-full" id="rate-input" type="range" min="0.1" max="2.5" step="0.01" value="1.2" />
+            </div>
+            <!-- pH -->
+            <div>
+                <label class="flex justify-between text-[10px] font-mono text-gray-400 mb-2">
+                    <span>MEDIUM pH</span>
+                    <span class="text-primary" id="ph-label">7.0</span>
+                </label>
+                <input class="w-full" id="ph-input" type="range" min="4" max="10" step="0.1" value="7.0" />
+            </div>
+            <!-- Nutrients -->
+            <div>
+                <label class="flex justify-between text-[10px] font-mono text-gray-400 mb-2">
+                    <span>NUTRIENTS (g/L)</span>
+                    <span class="text-primary" id="nut-label">15.0</span>
+                </label>
+                <input class="w-full" id="nut-input" type="range" min="0" max="50" step="0.5" value="15.0" />
+            </div>
+            <!-- Predict Button -->
+            <div class="flex justify-center lg:justify-end">
+                <button id="predict-btn" class="w-full lg:w-auto px-8 py-3 bg-primary text-darkBg font-bold rounded-custom
+               hover:bg-white transition-all duration-300 uppercase tracking-wider text-sm active:scale-95" disabled>
+                    LOADING…
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- App Script -->
+    <script src="app.js"></script>
+</body>
+
+</html>

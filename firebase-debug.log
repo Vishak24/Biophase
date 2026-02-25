@@ -1,0 +1,151 @@
+[debug] [2026-02-23T15:15:38.603Z] ----------------------------------------------------------------------
+[debug] [2026-02-23T15:15:38.604Z] Command:       /opt/homebrew/Cellar/node/25.2.1/bin/node /opt/homebrew/bin/firebase deploy --only hosting
+[debug] [2026-02-23T15:15:38.604Z] CLI Version:   15.7.0
+[debug] [2026-02-23T15:15:38.604Z] Platform:      darwin
+[debug] [2026-02-23T15:15:38.604Z] Node Version:  v25.2.1
+[debug] [2026-02-23T15:15:38.604Z] Time:          Mon Feb 23 2026 20:45:38 GMT+0530 (India Standard Time)
+[debug] [2026-02-23T15:15:38.604Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-02-23T15:15:39.119Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-23T15:15:39.119Z] > authorizing via signed-in user (vishalganesan620@gmail.com)
+[debug] [2026-02-23T15:15:39.119Z] [iam] checking project biophase-ai for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-02-23T15:15:39.119Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:39.119Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:39.119Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/biophase-ai:testIamPermissions [none]
+[debug] [2026-02-23T15:15:39.119Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/biophase-ai:testIamPermissions  x-goog-user-project=biophase-ai
+[debug] [2026-02-23T15:15:39.119Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/biophase-ai:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-02-23T15:15:40.714Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/biophase-ai:testIamPermissions 200
+[debug] [2026-02-23T15:15:40.714Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/biophase-ai:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-02-23T15:15:40.714Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:40.714Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:40.714Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/biophase-ai [none]
+[debug] [2026-02-23T15:15:41.131Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/biophase-ai 200
+[debug] [2026-02-23T15:15:41.131Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/biophase-ai {"projectId":"biophase-ai","projectNumber":"614759723021","displayName":"biophase-ai","name":"projects/biophase-ai","resources":{"hostingSite":"biophase-ai"},"state":"ACTIVE","etag":"1_8e8cc32d-3024-4ae2-b3d4-e02ef4810280"}
+[info] 
+[info] === Deploying to 'biophase-ai'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2026-02-23T15:15:41.132Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:41.132Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:41.132Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/biophase-ai/versions [none]
+[debug] [2026-02-23T15:15:41.132Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/biophase-ai/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2026-02-23T15:15:43.795Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/biophase-ai/versions 200
+[debug] [2026-02-23T15:15:43.795Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/biophase-ai/versions {"name":"projects/614759723021/sites/biophase-ai/versions/0c5ce5acc90fdd9b","status":"CREATED","config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[info] i  hosting[biophase-ai]: beginning deploy... 
+[info] i  hosting[biophase-ai]: found 4 files in stitch_ui 
+[debug] [2026-02-23T15:15:43.801Z] [hosting] uploading with 200 concurrency
+[debug] [2026-02-23T15:15:43.801Z] [hosting] hash cache [c3RpdGNoX3Vp] not populated
+[debug] [2026-02-23T15:15:43.866Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:43.866Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:43.866Z] [hosting] hash cache [c3RpdGNoX3Vp] stored for 4 files
+[debug] [2026-02-23T15:15:43.866Z] [hosting][hash queue][FINAL] {"max":64,"min":1,"avg":17.25,"active":0,"complete":4,"success":4,"errored":0,"retried":0,"total":4,"elapsed":64}
+[debug] [2026-02-23T15:15:43.867Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/614759723021/sites/biophase-ai/versions/0c5ce5acc90fdd9b:populateFiles [none]
+[debug] [2026-02-23T15:15:43.867Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/614759723021/sites/biophase-ai/versions/0c5ce5acc90fdd9b:populateFiles {"files":{"/scaler.json":"5326688870d8b27f97b42aa5e577a14bff158bfbceb2fa8135c2bb41d468425a","/index.html":"06f3ff95920e2f11f60128a3776e9ad49538a5439df442f83072c1d7cda6cb48","/app.js":"261a36393fb48067922fa6628aa783a9c2dbf062a7ca44e4e6ca5ebc546591f4","/bacteria_model.onnx":"557cf2c14d52c332ab7d457365cbfab1e60701fb805905c54ac115a299ef83a1"}}
+[debug] [2026-02-23T15:15:44.546Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/614759723021/sites/biophase-ai/versions/0c5ce5acc90fdd9b:populateFiles 200
+[debug] [2026-02-23T15:15:44.546Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/614759723021/sites/biophase-ai/versions/0c5ce5acc90fdd9b:populateFiles {"uploadRequiredHashes":["261a36393fb48067922fa6628aa783a9c2dbf062a7ca44e4e6ca5ebc546591f4","557cf2c14d52c332ab7d457365cbfab1e60701fb805905c54ac115a299ef83a1","5326688870d8b27f97b42aa5e577a14bff158bfbceb2fa8135c2bb41d468425a","06f3ff95920e2f11f60128a3776e9ad49538a5439df442f83072c1d7cda6cb48"],"uploadUrl":"https://upload-firebasehosting.googleapis.com/upload/sites/biophase-ai/versions/0c5ce5acc90fdd9b/files"}
+[debug] [2026-02-23T15:15:44.546Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:44.546Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:44.547Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:44.547Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:44.547Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:44.547Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:44.547Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:44.547Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:44.547Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/biophase-ai/versions/0c5ce5acc90fdd9b/files/261a36393fb48067922fa6628aa783a9c2dbf062a7ca44e4e6ca5ebc546591f4 [none]
+[debug] [2026-02-23T15:15:44.547Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/biophase-ai/versions/0c5ce5acc90fdd9b/files/261a36393fb48067922fa6628aa783a9c2dbf062a7ca44e4e6ca5ebc546591f4 [stream]
+[debug] [2026-02-23T15:15:44.547Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/biophase-ai/versions/0c5ce5acc90fdd9b/files/557cf2c14d52c332ab7d457365cbfab1e60701fb805905c54ac115a299ef83a1 [none]
+[debug] [2026-02-23T15:15:44.547Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/biophase-ai/versions/0c5ce5acc90fdd9b/files/557cf2c14d52c332ab7d457365cbfab1e60701fb805905c54ac115a299ef83a1 [stream]
+[debug] [2026-02-23T15:15:44.548Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/biophase-ai/versions/0c5ce5acc90fdd9b/files/5326688870d8b27f97b42aa5e577a14bff158bfbceb2fa8135c2bb41d468425a [none]
+[debug] [2026-02-23T15:15:44.548Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/biophase-ai/versions/0c5ce5acc90fdd9b/files/5326688870d8b27f97b42aa5e577a14bff158bfbceb2fa8135c2bb41d468425a [stream]
+[debug] [2026-02-23T15:15:44.548Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/biophase-ai/versions/0c5ce5acc90fdd9b/files/06f3ff95920e2f11f60128a3776e9ad49538a5439df442f83072c1d7cda6cb48 [none]
+[debug] [2026-02-23T15:15:44.548Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/biophase-ai/versions/0c5ce5acc90fdd9b/files/06f3ff95920e2f11f60128a3776e9ad49538a5439df442f83072c1d7cda6cb48 [stream]
+[debug] [2026-02-23T15:15:44.548Z] [hosting][populate queue][FINAL] {"max":681,"min":681,"avg":681,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":682}
+[debug] [2026-02-23T15:15:44.548Z] [hosting] uploads queued: 4
+[debug] [2026-02-23T15:15:46.118Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/biophase-ai/versions/0c5ce5acc90fdd9b/files/5326688870d8b27f97b42aa5e577a14bff158bfbceb2fa8135c2bb41d468425a 200
+[debug] [2026-02-23T15:15:46.118Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/biophase-ai/versions/0c5ce5acc90fdd9b/files/5326688870d8b27f97b42aa5e577a14bff158bfbceb2fa8135c2bb41d468425a [stream]
+[debug] [2026-02-23T15:15:46.241Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/biophase-ai/versions/0c5ce5acc90fdd9b/files/261a36393fb48067922fa6628aa783a9c2dbf062a7ca44e4e6ca5ebc546591f4 200
+[debug] [2026-02-23T15:15:46.241Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/biophase-ai/versions/0c5ce5acc90fdd9b/files/261a36393fb48067922fa6628aa783a9c2dbf062a7ca44e4e6ca5ebc546591f4 [stream]
+[debug] [2026-02-23T15:15:46.241Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/biophase-ai/versions/0c5ce5acc90fdd9b/files/06f3ff95920e2f11f60128a3776e9ad49538a5439df442f83072c1d7cda6cb48 200
+[debug] [2026-02-23T15:15:46.241Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/biophase-ai/versions/0c5ce5acc90fdd9b/files/06f3ff95920e2f11f60128a3776e9ad49538a5439df442f83072c1d7cda6cb48 [stream]
+[debug] [2026-02-23T15:15:47.247Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/biophase-ai/versions/0c5ce5acc90fdd9b/files/557cf2c14d52c332ab7d457365cbfab1e60701fb805905c54ac115a299ef83a1 200
+[debug] [2026-02-23T15:15:47.248Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/biophase-ai/versions/0c5ce5acc90fdd9b/files/557cf2c14d52c332ab7d457365cbfab1e60701fb805905c54ac115a299ef83a1 [stream]
+[debug] [2026-02-23T15:15:47.248Z] [hosting][upload queue][FINAL] {"max":2702,"min":1571,"avg":1915.5,"active":0,"complete":4,"success":4,"errored":0,"retried":0,"total":4,"elapsed":2702}
+[info] ✔  hosting[biophase-ai]: file upload complete 
+[debug] [2026-02-23T15:15:47.248Z] [hosting] deploy completed after 3452ms
+[debug] [2026-02-23T15:15:47.248Z] [
+  {
+    "config": {
+      "public": "stitch_ui",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "headers": [
+        {
+          "source": "**/*.onnx",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=31536000, immutable"
+            }
+          ]
+        },
+        {
+          "source": "**/*.wasm",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=31536000, immutable"
+            },
+            {
+              "key": "Cross-Origin-Opener-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Cross-Origin-Embedder-Policy",
+              "value": "require-corp"
+            }
+          ]
+        }
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "site": "biophase-ai"
+    },
+    "version": "projects/614759723021/sites/biophase-ai/versions/0c5ce5acc90fdd9b"
+  }
+]
+[info] i  hosting[biophase-ai]: finalizing version... 
+[debug] [2026-02-23T15:15:47.249Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:47.249Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:47.249Z] >>> [apiv2][query] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/biophase-ai/versions/0c5ce5acc90fdd9b updateMask=status%2Cconfig
+[debug] [2026-02-23T15:15:47.249Z] >>> [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/biophase-ai/versions/0c5ce5acc90fdd9b {"status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}],"headers":[{"glob":"**/*.onnx","headers":{"Cache-Control":"public, max-age=31536000, immutable"}},{"glob":"**/*.wasm","headers":{"Cache-Control":"public, max-age=31536000, immutable","Cross-Origin-Opener-Policy":"same-origin","Cross-Origin-Embedder-Policy":"require-corp"}}]}}
+[debug] [2026-02-23T15:15:47.923Z] <<< [apiv2][status] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/biophase-ai/versions/0c5ce5acc90fdd9b 200
+[debug] [2026-02-23T15:15:47.923Z] <<< [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/biophase-ai/versions/0c5ce5acc90fdd9b {"name":"projects/614759723021/sites/biophase-ai/versions/0c5ce5acc90fdd9b","status":"FINALIZED","config":{"headers":[{"headers":{"Cache-Control":"public, max-age=31536000, immutable"},"glob":"**/*.onnx"},{"headers":{"Cross-Origin-Embedder-Policy":"require-corp","Cache-Control":"public, max-age=31536000, immutable","Cross-Origin-Opener-Policy":"same-origin"},"glob":"**/*.wasm"}],"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-02-23T15:15:42.038413Z","createUser":{"email":"vishalganesan620@gmail.com"},"finalizeTime":"2026-02-23T15:15:47.758441Z","finalizeUser":{"email":"vishalganesan620@gmail.com"}}
+[debug] [2026-02-23T15:15:47.923Z] [hosting] finalized version for biophase-ai:[object Object]
+[info] ✔  hosting[biophase-ai]: version finalized 
+[info] i  hosting[biophase-ai]: releasing new version... 
+[debug] [2026-02-23T15:15:47.923Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:47.923Z] Checked if tokens are valid: true, expires at: 1771860874714
+[debug] [2026-02-23T15:15:47.923Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/biophase-ai/channels/live/releases versionName=projects%2F614759723021%2Fsites%2Fbiophase-ai%2Fversions%2F0c5ce5acc90fdd9b
+[debug] [2026-02-23T15:15:47.923Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/biophase-ai/channels/live/releases {}
+[debug] [2026-02-23T15:15:52.739Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/biophase-ai/channels/live/releases 200
+[debug] [2026-02-23T15:15:52.739Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/biophase-ai/channels/live/releases {"name":"projects/614759723021/sites/biophase-ai/channels/live/releases/1771859751912000","version":{"name":"projects/614759723021/sites/biophase-ai/versions/0c5ce5acc90fdd9b","status":"FINALIZED","config":{"headers":[{"headers":{"Cache-Control":"public, max-age=31536000, immutable"},"glob":"**/*.onnx"},{"headers":{"Cross-Origin-Opener-Policy":"same-origin","Cross-Origin-Embedder-Policy":"require-corp","Cache-Control":"public, max-age=31536000, immutable"},"glob":"**/*.wasm"}],"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-02-23T15:15:42.038413Z","createUser":{"email":"vishalganesan620@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocKxNgkeGs_m3A5fFLbs-qGj-h5YYN_dNLv3Ersiz-FU4sJLneQZ"},"finalizeTime":"2026-02-23T15:15:47.758441Z","finalizeUser":{"email":"vishalganesan620@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocKxNgkeGs_m3A5fFLbs-qGj-h5YYN_dNLv3Ersiz-FU4sJLneQZ"}},"type":"DEPLOY","releaseTime":"2026-02-23T15:15:51.912Z","releaseUser":{"email":"vishalganesan620@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocKxNgkeGs_m3A5fFLbs-qGj-h5YYN_dNLv3Ersiz-FU4sJLneQZ"}}
+[debug] [2026-02-23T15:15:52.739Z] [hosting] release: {"name":"projects/614759723021/sites/biophase-ai/channels/live/releases/1771859751912000","version":{"name":"projects/614759723021/sites/biophase-ai/versions/0c5ce5acc90fdd9b","status":"FINALIZED","config":{"headers":[{"headers":{"Cache-Control":"public, max-age=31536000, immutable"},"glob":"**/*.onnx"},{"headers":{"Cross-Origin-Opener-Policy":"same-origin","Cross-Origin-Embedder-Policy":"require-corp","Cache-Control":"public, max-age=31536000, immutable"},"glob":"**/*.wasm"}],"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-02-23T15:15:42.038413Z","createUser":{"email":"vishalganesan620@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocKxNgkeGs_m3A5fFLbs-qGj-h5YYN_dNLv3Ersiz-FU4sJLneQZ"},"finalizeTime":"2026-02-23T15:15:47.758441Z","finalizeUser":{"email":"vishalganesan620@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocKxNgkeGs_m3A5fFLbs-qGj-h5YYN_dNLv3Ersiz-FU4sJLneQZ"}},"type":"DEPLOY","releaseTime":"2026-02-23T15:15:51.912Z","releaseUser":{"email":"vishalganesan620@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocKxNgkeGs_m3A5fFLbs-qGj-h5YYN_dNLv3Ersiz-FU4sJLneQZ"}}
+[info] ✔  hosting[biophase-ai]: release complete 
+[info] 
+[info] ✔  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/biophase-ai/overview
+[info] Hosting URL: https://biophase-ai.web.app
+[debug] [2026-02-23T15:15:57.834Z] Error: Timed out.
+    at Timeout._onTimeout (/opt/homebrew/lib/node_modules/firebase-tools/lib/utils.js:308:49)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[error] 
+[error] Error: An unexpected error has occurred.
