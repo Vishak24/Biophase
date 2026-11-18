@@ -1,225 +1,81 @@
-
 # BioPhase AI
 
-**ML-Powered Bacterial Growth Phase Detection with Real-Time Lab Dashboard**
+Classifies which growth phase a bacterial batch culture is in (**Lag, Log, Stationary or Death**) from optical density (OD600), growth rate, pH and nutrient level. A Random Forest model is exported to ONNX and runs entirely in the browser, with no server.
 
-Privacy-First • Open Source • Browser-Native • Responsible AI
+**Live demo:** [biophase-ai.web.app](https://biophase-ai.web.app) (static site on Firebase Hosting)
 
-![Python](https://img.shields.io/badge/Python-3.10+-blue)
-![scikit-learn](https://img.shields.io/badge/scikit--learn-RandomForest-orange)
-![ONNX](https://img.shields.io/badge/ONNX-Browser--Native-purple)
-![UI](https://img.shields.io/badge/UI-Google%20Stitch-teal)
-![Hosted](https://img.shields.io/badge/Hosted-Firebase-yellow)
-![License](https://img.shields.io/badge/License-MIT-green)
+## Why it's interesting
 
----
+Deciding when a culture moves from exponential growth to stationary phase matters for harvesting, antibiotic timing and contamination monitoring. It is usually judged by eye from a growth curve. This project explores whether a small model over a few cheap, standard lab measurements can make that call, and how to ship such a model with zero backend.
 
-## 🧬 Overview
-
-BioPhase AI is a machine learning system that detects the **current growth phase of a bacterial culture** — Lag, Log (Exponential), Stationary, or Death — from a small set of measurable lab parameters.
-
-It combines a **biologically grounded Random Forest classifier** with a sci-fi inspired real-time dashboard that visualizes the full bacterial lifecycle, the current phase, and the model's confidence — all running natively in the browser with no backend required.
-
-Unlike generic ML demos, BioPhase AI is designed around **actual microbiology principles** — every feature, every phase boundary, and every training sample was engineered to reflect how bacteria genuinely behave in batch culture.
-
-BioPhase AI does **not** require expensive sensors or sequencing equipment.  
-It works from four values any lab can measure:
-
-> "OD600 reading — Growth rate — Medium pH — Nutrient concentration"
-
----
-
-## 🌐 Live Demo
-
-**[https://biophase-ai.web.app](https://biophase-ai.web.app)**
-
-Hosted on Firebase. No login, no install. Open in any modern browser and start predicting immediately.
-
----
-
-## 🔭 Why This Problem Matters
-
-Accurately identifying which growth phase a bacterial culture is in has direct applications in:
-
-- **Pharmaceutical manufacturing** — harvesting cells at peak Log phase for maximum yield
-- **Food safety** — detecting exponential contamination growth before it becomes dangerous
-- **Research labs** — automating the decision of when to treat, harvest, or discard a culture
-- **Antibiotic research** — different phases respond differently to antibiotics; mis-timing kills efficacy
-
-Traditional methods rely on a researcher **visually interpreting a growth curve** over hours. BioPhase AI makes that call **instantly and objectively.**
-
----
-
-## 🦠 The Four Phases
-
-| Phase | What's Happening | Key Signals |
+| Phase | Behaviour | Typical signals |
 |---|---|---|
-| 🔵 **Lag** | Bacteria adapting to new environment. No reproduction yet. | Low OD600, ~zero growth rate, high nutrients, neutral pH |
-| 🟢 **Log** | Explosive binary fission. Population doubling at constant rate. | Rising OD600, high growth rate, dropping nutrients |
-| 🟠 **Stationary** | Birth rate = Death rate. Nutrients depleted, waste accumulates. | Peak OD600, near-zero growth, low nutrients, acidic pH |
-| 🔴 **Death** | Cell death exceeds division. Population crashes logarithmically. | Falling OD600, negative growth rate, near-zero nutrients, very acidic |
+| Lag | cells adapting, little division | low OD600, growth rate ≈ 0, nutrients high, pH neutral |
+| Log | exponential division | rising OD600, high growth rate, nutrients falling |
+| Stationary | division ≈ death | OD600 at plateau, growth rate ≈ 0, nutrients low, pH dropping |
+| Death | death exceeds division | OD600 falling, negative growth rate, nutrients ≈ 0, acidic |
 
----
+## How it works
 
-## ⚙️ ML Pipeline
+**Training data is simulated.** Growth curves were generated with a logistic rise, exponential decline, nutrient depletion and pH acidification, plus Gaussian noise and Savitzky–Golay smoothing to resemble spectrophotometer readings. The simulation script is not included in this repository; only the trained artefacts are.
 
-### Data Simulation
+**Features (8).** The model takes four measured values plus four derived from the time series (see `inference.py`):
 
-Real lab data is expensive and proprietary. BioPhase AI generates **synthetic but biologically faithful growth curves** using:
+| Feature | Meaning |
+|---|---|
+| `od600` | smoothed optical density |
+| `gr` | growth rate, dOD/dt |
+| `acc` | rate of change of growth rate |
+| `nut` | nutrient level (fraction of initial, 0–1) |
+| `ph` | medium pH |
+| `od_std` | rolling standard deviation of OD (5 points) |
+| `log_od` | log(1 + OD) |
+| `tnorm` | time as a fraction of the run |
 
-- **Logistic (sigmoid) growth** for the Log phase OD600 rise
-- **Exponential decay** for the Death phase population crash
-- **Linear nutrient depletion** and **pH acidification** across phases
-- Gaussian noise + Savitzky-Golay smoothing to mimic real spectrophotometer readings
+**Model.** scikit-learn `RandomForestClassifier` with `StandardScaler`, stratified 80/20 split. The model is exported to `bacteria_model.onnx` for the browser, and the scaler parameters to `scaler.json`.
 
-### Features
+**Two inference paths**
 
-Each sample captures the culture at a specific time point using four input features:
+- `inference.py`: given a full time series (time, OD600, nutrients, pH), it computes all eight features properly and predicts a phase per time point.
+- The web dashboard (`index.html`, `app.js`): takes a *single* reading from four sliders and runs the ONNX model with onnxruntime-web. A single point has no history, so three features are approximated: `acc = 0`, `od_std = 0.02`, and `tnorm` estimated from OD600. The slider units are also rescaled to the training ranges (nutrients g/L → fraction, growth rate re-centred).
 
-| Feature | Range | Biological Meaning |
-|---|---|---|
-| `OD600` | 0.00 – 2.00 | Optical density — proxy for cell count |
-| `growth_rate` | −2.0 – +2.5 h⁻¹ | Rate of change of OD600; negative means cells are dying |
-| `pH` | 4.0 – 10.0 | Drops from ~7.0 → ~5.9 as metabolism generates acidic waste |
-| `nutrients` | 0 – 50 g/L | Depletes rapidly during Log, near-zero in Death |
+## Results (and how to read them)
 
-### Model
+On the held-out **simulated** test set (240 samples, 60 per phase), the model scores 1.00 precision and recall for every class. That shows the model recovers the rules used to generate the data. It is **not** evidence of accuracy on real cultures, which has not been measured. The phase boundaries, especially Lag/Log, are where real data would be hardest.
 
-- **Algorithm:** `RandomForestClassifier` (scikit-learn)
-- **Why Random Forest:** Robust to noisy features, interpretable via feature importances, no hyperparameter sensitivity, excellent on small tabular datasets
-- **Train/Test Split:** Stratified 80/20 to maintain phase balance across splits
-- **Preprocessing:** `StandardScaler` normalization applied before training and inference
-- **Output:** Phase label + per-class confidence probabilities via `predict_proba()`
+Reported feature importances: nutrients ≈ 29%, pH ≈ 19%, growth rate ≈ 14%, OD600 ≈ 13%.
 
----
+## Run locally
 
-## 📊 Results
+```bash
+# Web dashboard (any static server; the ONNX model is fetched relative to the page)
+python3 -m http.server 8000      # then open http://localhost:8000
 
-```
-              precision    recall  f1-score   support
-
-         Lag       1.00      1.00      1.00        60
-         Log       1.00      1.00      1.00        60
-  Stationary       1.00      1.00      1.00        60
-       Death       1.00      1.00      1.00        60
-
-    accuracy                           1.00       240
+# Python inference on a time series
+pip install numpy pandas scipy scikit-learn
+python3 -c "from inference import predict_phases; help(predict_phases)"
 ```
 
-> The model achieves **100% accuracy** on the synthetic test set.
-> On real lab data, accuracy at clean mid-phase points exceeds 95%.
-> The known challenge is the **Lag/Log boundary** where phase signals naturally overlap.
-
-### Feature Importance
+## Repository contents
 
 ```
-nutrients      ████████████████████  ~29%
-pH             ████████████████      ~19%
-growth_rate    ████████████          ~14%
-OD600          ███████████           ~13%
+index.html, app.js          dashboard UI (D3 growth curve, sliders, in-browser ONNX inference)
+bacteria_model.onnx         model for the browser
+bacteria_phase_model.pkl    model + scaler + feature list for inference.py (pickle; load only files you trust)
+scaler.json                 scaler mean/scale for the browser
+inference.py                feature engineering + per-time-point prediction
+firebase.json               Firebase Hosting config
 ```
 
-Nutrients and pH are the strongest predictors — consistent with microbiology literature.  
-The model is learning biology, not just patterns.
+The dashboard UI was designed with Google Stitch.
 
----
+## Limitations and next steps
 
-## 🖥️ Dashboard UI
+- Validate against real OD600 time series, for example public growth-curve datasets or plate-reader exports, and report accuracy per phase boundary.
+- Commit the simulation and training scripts so the results are reproducible.
+- Feed the dashboard a short history of readings instead of one point, so the derived features are real rather than approximated.
+- Try sequence models (for example a temporal CNN) for multi-step phase detection.
 
-Built with **Google Stitch** (AI UI generator) and hosted on **Firebase Hosting** as a fully static website.
+## License
 
-**What you see:**
-
-- Full-width growth curve with colour-coded phase bands — Lag (blue) → Log (green) → Stationary (amber) → Death (red)
-- Animated white dot tracking the predicted position on the curve
-- **Current Phase card** showing: phase name, confidence gauge (%), and one-line biological description
-- Live readout of all input values including computed `log(OD)`
-- Bottom input panel with four sliders for OD600, Growth Rate, pH, and Nutrients
-- `RUN PREDICTION` button triggers in-browser ONNX inference — no server, no API call
-
-**Tech Stack:**
-
-```
-Frontend    →  HTML / CSS / Vanilla JS   (Google Stitch)
-ML Runtime  →  onnxruntime-web           (browser-native, zero backend)
-Charts      →  D3.js
-Hosting     →  Firebase Hosting          (static, free tier, global CDN)
-```
-
----
-
-## 🧪 Quick Value Reference
-
-Use these on the live dashboard to trigger each phase:
-
-| Phase | OD600 | Growth Rate | pH | Nutrients |
-|---|---|---|---|---|
-| 🔵 Lag | `0.05` | `0.10` | `7.0` | `47.0 g/L` |
-| 🟢 Log | `0.50` | `0.80` | `6.7` | `25.0 g/L` |
-| 🟠 Stationary | `1.85` | `0.10` | `6.3` | `4.0 g/L` |
-| 🔴 Death | `0.30` | `-0.40` | `6.0` | `0.0 g/L` |
-
-> **Note:** For Death phase, growth rate must be set to a negative value.
-> If the slider minimum is `0.10`, the model will attempt to infer Death
-> from the combination of zero nutrients, low pH, and low OD600.
-
----
-
-## 📁 Repository Structure
-
-```
-biophase-ai/
-├── src/
-│   ├── inference.py                  # Reusable predict_phase() function
-│   └── data_simulation.py            # Growth curve generator
-├── models/
-│   ├── bacteria_phase_model.pkl      # Trained Random Forest + scaler
-│   └── bacteria_model.onnx           # ONNX export for browser inference
-├── web/
-│   ├── index.html                    # Lab dashboard UI (Google Stitch)
-│   ├── style.css                     # Glassmorphism dark theme
-│   └── app.js                        # Slider → ONNX → phase card wiring
-├── .firebaserc                       # Firebase project config
-├── firebase.json                     # Firebase Hosting config
-├── requirements.txt
-└── README.md
-```
-
----
-
-## 🔭 Possible Extensions
-
-- Replace synthetic data with **real OD600 time-series** from a spectrophotometer
-- Use **LSTM or Temporal CNN** for sequence-aware multi-step phase detection
-- Add a **continuous monitoring mode** — stream live OD600 readings and annotate phase in real time
-- Extend to **mixed cultures** or fed-batch fermentation bioreactor processes
-- Connect to an **Arduino / Raspberry Pi + OD600 photodiode sensor** for true lab-bench deployment
-
----
-
-## 🛠️ Built With
-
-- [Python 3.10+](https://python.org)
-- [scikit-learn](https://scikit-learn.org)
-- [NumPy](https://numpy.org) / [Pandas](https://pandas.pydata.org) / [SciPy](https://scipy.org)
-- [Matplotlib](https://matplotlib.org) / [Seaborn](https://seaborn.pydata.org)
-- [Google Stitch](https://stitch.withgoogle.com) — UI design
-- [onnxruntime-web](https://onnxruntime.ai) — browser-native ML inference
-- [D3.js](https://d3js.org) — growth curve visualization
-- [Firebase Hosting](https://firebase.google.com/products/hosting) — deployment
-
----
-
-## 📄 License
-
-```
-MIT License — free to use, modify, and distribute.
-See LICENSE file for full terms.
-```
-
----
-
-<p align="center">
-  Built with curiosity about biology and a love for clean ML pipelines.
-</p>
-```
+[MIT](LICENSE)
